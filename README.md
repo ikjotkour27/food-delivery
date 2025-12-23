@@ -1,11 +1,13 @@
-# TOMATO - Food Ordering Website
+# CLOMATO - Food Ordering Website
 
 This repository hosts my website for CLOMATO, a dynamic food ordering website built with the MERN Stack. It offers a user-friendly platform for seamless online food ordering.
 
 ## Demo
 
-- User Panel: [https://food-delivery-frontend-s2l9.onrender.com/](https://food-delivery-frontend-s2l9.onrender.com/)
-- Admin Panel: [https://food-delivery-admin-wrme.onrender.com/](https://food-delivery-admin-wrme.onrender.com/)
+- User Panel: [https://food-delivery-azure-psi.vercel.app/](https://food-delivery-azure-psi.vercel.app/)
+- Admin Panel: [https://food-delivery-amber-eight.vercel.app/](https://food-delivery-amber-eight.vercel.app/)
+- Backend: [https://food-delivery-j6jr.onrender.com/](https://food-delivery-j6jr.onrender.com/)
+It is successfully deplyed on vercel and backend is on Render
 
 ## Features
 
@@ -46,12 +48,12 @@ This repository hosts my website for CLOMATO, a dynamic food ordering website bu
 Clone the project
 
 ```bash
-    git clone https://github.com/Mshandev/Food-Delivery
+    git clone https://github.com/ikjotkour.27/food-delivery
 ```
 Go to the project directory
 
 ```bash
-    cd Food-Delivery
+    cd food-delivery
 ```
 Install dependencies (frontend)
 
@@ -93,7 +95,7 @@ Setup the Frontend and Backend URL
 Start the Backend server
 
 ```bash
-    nodemon server.js
+    node server.js
 ```
 
 Start the Frontend server
@@ -118,7 +120,7 @@ Start the Backend server
 
 ## Deployment
 
-The application is deployed on Render.
+The application is deployed on Vercel.
 
 ## Contributing
 
@@ -127,4 +129,4 @@ Just raise an issue, and we will discuss it.
 
 ## Feedback
 
-If you have any feedback, please reach out to me [here](https://www.linkedin.com/in/muhammad-shan-full-stack-developer/)
+If you have any feedback, please reach out to me [here](https://www.linkedin.com/in/ikjot-kour-0994a730b/)
