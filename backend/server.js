@@ -7,18 +7,30 @@ import "dotenv/config";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
 
-// app config
 const app = express();
-const port =process.env.PORT || 4000;
+const port = process.env.PORT || 4000;
 
-//middlewares
+/* ✅ CORS — USE ONLY ONCE */
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://food-delivery-admin.onrender.com"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
+}));
+
+/* ✅ Preflight */
+app.options("*", cors());
+
+/* ✅ Middlewares */
 app.use(express.json());
-app.use(cors());
 
-// DB connection
+/* ✅ DB */
 connectDB();
 
-// api endpoints
+/* ✅ Routes */
 app.use("/api/food", foodRouter);
 app.use("/images", express.static("uploads"));
 app.use("/api/user", userRouter);
