@@ -1,59 +1,62 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "./Login.css";
-import { useState } from "react";
-import { toast } from "react-toastify";
 import axios from "axios";
-import { StoreContext } from "../../context/StoreContext";
-import {useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
-const Login = ({ url }) => {
-  const navigate=useNavigate();
-  const {admin,setAdmin,token, setToken } = useContext(StoreContext);
+const Login = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState({
-    email: "",
+    username: "",
     password: "",
   });
-  const onChangeHandler = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setData((data) => ({ ...data, [name]: value }));
+
+  const onChangeHandler = (e) => {
+    setData({ ...data, [e.target.name]: e.target.value });
   };
-  const onLogin = async (event) => {
-    event.preventDefault();
-    const response = await axios.post(url + "/api/user/login", data);
-    if (response.data.success) {
-      if (response.data.role === "admin") {
-        setToken(response.data.token);
-        setAdmin(true);
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("admin", true);
-        toast.success("Login Successfully");
-        navigate("/add")
-      }else{
-        toast.error("You are not an admin");
+
+  const onLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      const res = await axios.post(
+        "http://localhost:4000/api/admin/login",
+        data
+      );
+
+      if (res.data.success) {
+        localStorage.setItem("adminToken", res.data.token);
+        toast.success("Admin Login Successful");
+        navigate("/add");
+      } else {
+        toast.error("Invalid admin credentials");
       }
-    } else {
-      toast.error(response.data.message);
+    } catch (error) {
+      toast.error("Server error");
     }
   };
-  useEffect(()=>{
-    if(admin && token){
-       navigate("/add");
+
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      navigate("/add");
     }
-  },[])
+  }, []);
+
   return (
     <div className="login-popup">
       <form onSubmit={onLogin} className="login-popup-container">
         <div className="login-popup-title">
-          <h2>Login</h2>
+          <h2>Admin Login</h2>
         </div>
+
         <div className="login-popup-inputs">
           <input
-            name="email"
+            name="username"
             onChange={onChangeHandler}
-            value={data.email}
-            type="email"
-            placeholder="Your email"
+            value={data.username}
+            type="text"
+            placeholder="Admin username"
             required
           />
           <input
@@ -61,10 +64,11 @@ const Login = ({ url }) => {
             onChange={onChangeHandler}
             value={data.password}
             type="password"
-            placeholder="Your password"
+            placeholder="Admin password"
             required
           />
         </div>
+
         <button type="submit">Login</button>
       </form>
     </div>

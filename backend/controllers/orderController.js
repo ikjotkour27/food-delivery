@@ -6,52 +6,65 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // placing user order for frontend
 const placeOrder = async (req, res) => {
-  const frontend_url = "https://food-delivery-frontend-s2l9.onrender.com";
+  const frontend_url = "http://localhost:5173";
+
   try {
+    // 1️⃣ Save order in DB
     const newOrder = new orderModel({
       userId: req.body.userId,
       items: req.body.items,
       amount: req.body.amount,
       address: req.body.address,
+      payment: false,
     });
+
     await newOrder.save();
     await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
 
+    // 2️⃣ Build Stripe-safe line_items
     const line_items = req.body.items.map((item) => ({
       price_data: {
         currency: "usd",
         product_data: {
-          name: item.name,
+          name: item.name || "Food Item",
         },
-        unit_amount: item.price * 100,
+        unit_amount: Math.round(Number(item.price) * 100),
       },
-      quantity: item.quantity,
+      quantity: Number(item.quantity),
     }));
 
-    line_items.push({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: "Delivery Charges",
-        },
-        unit_amount: 2 * 100,
-      },
-      quantity: 1,
-    });
-
+    // 3️⃣ Create Stripe session (ONLY ONCE)
     const session = await stripe.checkout.sessions.create({
-      line_items: line_items,
       mode: "payment",
+      line_items,
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: "fixed_amount",
+            fixed_amount: {
+              amount: 200, // $2 delivery fee
+              currency: "usd",
+            },
+            display_name: "Delivery Charges",
+          },
+        },
+      ],
       success_url: `${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
       cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
     });
 
+    // 4️⃣ Send Stripe URL to frontend
     res.json({ success: true, session_url: session.url });
+
   } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: "Error" });
+    console.error("Stripe Error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
+
 
 const verifyOrder = async (req, res) => {
   const { orderId, success } = req.body;

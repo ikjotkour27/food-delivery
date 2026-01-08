@@ -1,16 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./Add.css";
 import { assets } from "../../assets/assets";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useContext } from "react";
-import { StoreContext } from "../../context/StoreContext";
-import { useEffect } from "react";
-import {useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const Add = ({url}) => {
-  const navigate=useNavigate();
-  const {token,admin} = useContext(StoreContext);
+const Add = ({ url }) => {
+  const navigate = useNavigate();
+  const adminToken = localStorage.getItem("adminToken");
+
   const [image, setImage] = useState(false);
   const [data, setData] = useState({
     name: "",
@@ -19,14 +17,21 @@ const Add = ({url}) => {
     category: "Salad",
   });
 
-  const onChangeHandler = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setData((data) => ({ ...data, [name]: value }));
+  // ✅ SINGLE AUTH GUARD
+  useEffect(() => {
+    if (!adminToken) {
+      toast.error("Please login as admin");
+      navigate("/login", { replace: true });
+    }
+  }, [adminToken, navigate]);
+
+  const onChangeHandler = (e) => {
+    setData({ ...data, [e.target.name]: e.target.value });
   };
 
-  const onSubmitHandler = async (event) => {
-    event.preventDefault();
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
+
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("description", data.description);
@@ -34,8 +39,14 @@ const Add = ({url}) => {
     formData.append("category", data.category);
     formData.append("image", image);
 
-    const response = await axios.post(`${url}/api/food/add`, formData,{headers:{token}});
+    const response = await axios.post(
+      `${url}/api/food/add`,
+      formData,
+      { headers: { token: adminToken } }
+    );
+
     if (response.data.success) {
+      toast.success(response.data.message);
       setData({
         name: "",
         description: "",
@@ -43,17 +54,11 @@ const Add = ({url}) => {
         category: "Salad",
       });
       setImage(false);
-      toast.success(response.data.message);
     } else {
       toast.error(response.data.message);
     }
   };
-  useEffect(()=>{
-    if(!admin && !token){
-      toast.error("Please Login First");
-       navigate("/");
-    }
-  },[])
+
   return (
     <div className="add">
       <form onSubmit={onSubmitHandler} className="flex-col">
@@ -73,6 +78,7 @@ const Add = ({url}) => {
             required
           />
         </div>
+
         <div className="add-product-name flex-col">
           <p>Product name</p>
           <input
@@ -80,10 +86,10 @@ const Add = ({url}) => {
             value={data.name}
             type="text"
             name="name"
-            placeholder="Type here"
             required
           />
         </div>
+
         <div className="add-product-description flex-col">
           <p>Product description</p>
           <textarea
@@ -91,44 +97,36 @@ const Add = ({url}) => {
             value={data.description}
             name="description"
             rows="6"
-            placeholder="Write content here"
             required
-          ></textarea>
+          />
         </div>
+
         <div className="add-category-price">
-          <div className="add-category flex-col">
-            <p>Product category</p>
-            <select
-              name="category"
-              required
-              onChange={onChangeHandler}
-              value={data.category}
-            >
-              <option value="Salad">Salad</option>
-              <option value="Rolls">Rolls</option>
-              <option value="Deserts">Deserts</option>
-              <option value="Sandwich">Sandwich</option>
-              <option value="Cake">Cake</option>
-              <option value="Pure Veg">Pure Veg</option>
-              <option value="Pasta">Pasta</option>
-              <option value="Noodles">Noodles</option>
-            </select>
-          </div>
-          <div className="add-price flex-col">
-            <p>Product price</p>
-            <input
-              onChange={onChangeHandler}
-              value={data.price}
-              type="Number"
-              name="price"
-              placeholder="$20"
-              required
-            />
-          </div>
+          <select
+            name="category"
+            onChange={onChangeHandler}
+            value={data.category}
+          >
+            <option>Salad</option>
+            <option>Rolls</option>
+            <option>Deserts</option>
+            <option>Sandwich</option>
+            <option>Cake</option>
+            <option>Pure Veg</option>
+            <option>Pasta</option>
+            <option>Noodles</option>
+          </select>
+
+          <input
+            onChange={onChangeHandler}
+            value={data.price}
+            type="number"
+            name="price"
+            required
+          />
         </div>
-        <button type="submit" className="add-btn">
-          ADD
-        </button>
+
+        <button type="submit" className="add-btn">ADD</button>
       </form>
     </div>
   );

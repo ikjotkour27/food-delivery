@@ -1,7 +1,8 @@
 import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-
+import { food_list as staticFoodList } 
+from "../assets/frontend_assets/assets";
 export const StoreContext = createContext(null);
 
 const StoreContextProvider = (props) => {
@@ -10,41 +11,35 @@ const StoreContextProvider = (props) => {
   const [token, setToken] = useState("");
   const [food_list, setFoodList] = useState([]);
 
-  const addToCart = async (itemId) => {
-    if (!cartItems[itemId]) {
-      setCartItems((prev) => ({ ...prev, [itemId]: 1 }));
-    } else {
-      setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }));
-    }
-    if (token) {
-      const response=await axios.post(
-        url + "/api/cart/add",
-        { itemId },
-        { headers: { token } }
-      );
-      if(response.data.success){
-        toast.success("item Added to Cart")
-      }else{
-        toast.error("Something went wrong")
-      }
-    }
-  };
+ const addToCart = (itemId) => {
+  const id = itemId.toString();
 
-  const removeFromCart = async (itemId) => {
-    setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
-    if (token) {
-      const response= await axios.post(
-        url + "/api/cart/remove",
-        { itemId },
-        { headers: { token } }
-      );
-      if(response.data.success){
-        toast.success("item Removed from Cart")
-      }else{
-        toast.error("Something went wrong")
-      }
+  setCartItems((prev) => {
+    const prevItems = prev || {};
+    return {
+      ...prevItems,
+      [id]: (prevItems[id] || 0) + 1,
+    };
+  });
+};
+
+const removeFromCart = (itemId) => {
+  const id = itemId.toString();
+
+  setCartItems((prev) => {
+    if (!prev || !prev[id]) return prev;
+
+    const updated = { ...prev };
+
+    if (updated[id] === 1) {
+      delete updated[id];
+    } else {
+      updated[id] -= 1;
     }
-  };
+
+    return updated;
+  });
+};
 
   const getTotalCartAmount = () => {
     let totalAmount = 0;
@@ -57,14 +52,9 @@ const StoreContextProvider = (props) => {
     return totalAmount;
   };
 
-  const fetchFoodList = async () => {
-    const response = await axios.get(url + "/api/food/list");
-    if (response.data.success) {
-      setFoodList(response.data.data);
-    } else {
-      alert("Error! Products are not fetching..");
-    }
-  };
+ const fetchFoodList = async () => {
+  setFoodList(staticFoodList);
+};
 
   const loadCardData = async (token) => {
     const response = await axios.post(
